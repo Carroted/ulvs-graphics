@@ -561,7 +561,7 @@ class RasterBackground {
     let dotDiffY = yDiff % this.distance;
 
     this.dots.forEach((dot) => {
-      dot.setPosition({ x: dot.ox + dotDiffX, y: dot.oy + dotDiffY });
+      dot.setPosition({ x: dot.ox + cXDiff, y: dot.oy + cYDiff });
     });
 
     if (!this.engine) return;
