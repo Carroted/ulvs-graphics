@@ -81,7 +81,7 @@ class OutputPlugComponent extends Component {
     this.oCircle.setColor("white");
     this.elements.push({ element: this.oCircle, render: (el) => el.createSVGElement() });
 
-    this.oT = new RoundedTriangleComponent(0, -1*this.scale, 90, 1 * this.scale); // the white triangle
+    this.oT = new RoundedTriangleComponent(0, -1 * this.scale, 90, 1 * this.scale); // the white triangle
     this.oT.setColor("white");
     this.elements.push({ element: this.oT, render: (el) => el.createSVGElement() });
 
@@ -118,7 +118,7 @@ class InputSocketComponent extends Component {
     this.cCircle.setColor("white");
     this.elements.push({ element: this.cCircle, render: (el) => el.createSVGElement() });
 
-    this.cT = new RoundedTriangleComponent(22*this.scale, -1*this.scale, 90, 1 * this.scale);
+    this.cT = new RoundedTriangleComponent(22 * this.scale, -1 * this.scale, 90, 1 * this.scale);
     this.cT.setColor("white");
     this.elements.push({ element: this.cT, render: (el) => el.createSVGElement() });
 
@@ -173,8 +173,8 @@ class Node extends Component {
 
     this.sockets = [];
     this.plugs = [];
-    this.elements.push({ element: this.sockets, render: (el) => {return el.map(e => e.createSVGElement());} });
-    this.elements.push({ element: this.plugs, render: (el) => {return el.map(e => e.createSVGElement());} });
+    this.elements.push({ element: this.sockets, render: (el) => { return el.map(e => e.createSVGElement()); } });
+    this.elements.push({ element: this.plugs, render: (el) => { return el.map(e => e.createSVGElement()); } });
 
     return this;
   }
@@ -197,7 +197,7 @@ class Node extends Component {
     this.plugs.forEach((plug, i) => {
       plug.setPosition({
         x: this.tw - (36 - 8) * this.scale,
-        y: (this.th * 0.2) + 25*this.scale + (36 * i) * this.scale
+        y: (this.th * 0.2) + 25 * this.scale + (36 * i) * this.scale
       })
       plug.setScale(this.scale);
     });
@@ -223,12 +223,12 @@ class Node extends Component {
     //this.cText = new Text();
   }
   addSocket(type) {
-    const socket = new InputSocketComponent((-8 * this.scale), (this.th * 0.2) + 25*this.scale + (36 * this.sockets.length) * this.scale, 16, 34, this.scale, type);
+    const socket = new InputSocketComponent((-8 * this.scale), (this.th * 0.2) + 25 * this.scale + (36 * this.sockets.length) * this.scale, 16, 34, this.scale, type);
     this.sockets.push(socket);
     return this.sockets;
   }
   addPlug(type) {
-    const plug = new OutputPlugComponent(this.tw - (36 - 8) * this.scale, (this.th * 0.2) + 25*this.scale + (36 * this.plugs.length) * this.scale, 16, 34, this.scale, type);
+    const plug = new OutputPlugComponent(this.tw - (36 - 8) * this.scale, (this.th * 0.2) + 25 * this.scale + (36 * this.plugs.length) * this.scale, 16, 34, this.scale, type);
     this.plugs.push(plug);
     return this.plug;
   }
@@ -347,7 +347,7 @@ class Triangle {
     if (this.color) triangle.setAttribute("fill", this.color);
     if (this.stroke) triangle.setAttribute("stroke", this.stroke);
     if (this.strokeWidth) triangle.setAttribute("stroke-width", this.strokeWidth);
-    if (this.rot) triangle.setAttribute("transform", "rotate(" + this.rot + "," + (x + this.width / 2) + "," + (y + this.height/2) + ")");
+    if (this.rot) triangle.setAttribute("transform", "rotate(" + this.rot + "," + (x + this.width / 2) + "," + (y + this.height / 2) + ")");
     if (this.rounded) triangle.setAttribute("stroke-linejoin", "round");
     return triangle;
   }
@@ -412,7 +412,7 @@ class Circle {
   }
 }
 class Rectangle {
-  constructor(x, y, width, height, rounded=false, radius=0) {
+  constructor(x, y, width, height, rounded = false, radius = 0) {
     this.x = x;
     this.y = y;
     this.height = height;
@@ -561,7 +561,25 @@ class RasterBackground {
     let dotDiffY = yDiff % this.distance;
 
     this.dots.forEach((dot) => {
-      dot.setPosition({ x: dot.ox + cXDiff, y: dot.oy + cYDiff });
+      dot.setPosition({ x: dot.x + cXDiff, y: dot.y + cYDiff });
+
+      // if it moved too far, move it back to the other side
+      // round x and y to the dot distance this.baseDist
+      let dotXRound = Math.round(dot.x / this.baseDist) * this.baseDist;
+      if (dot.x > this.width) {
+        dot.setPosition({ x: dot.x - this.width, y: dot.y });
+      }
+      if (dot.x < 0) {
+        dot.setPosition({ x: dot.x + this.width, y: dot.y });
+      }
+
+      if (dot.y > this.height) {
+        dot.setPosition({ x: dot.x, y: dot.y - this.height });
+      }
+
+      if (dot.y < 0) {
+        dot.setPosition({ x: dot.x, y: dot.y + this.height });
+      }
     });
 
     if (!this.engine) return;
@@ -571,6 +589,10 @@ class RasterBackground {
     });
   }
   initPanning() {
+    window.addEventListener("auxclick", (event) => {
+      if (event.button === 1) event.preventDefault();
+    });
+
     this.container.addEventListener("mousedown", (e) => {
       this.dragging = true;
       this.mouseStartPos = {
@@ -635,7 +657,7 @@ class SVGEngine {
 
     return this;
   }
-  static createShadowFilter(dx=3, dy=3, x=0, y=0, deviation=2) {
+  static createShadowFilter(dx = 3, dy = 3, x = 0, y = 0, deviation = 2) {
     const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
 
     const filter = document.createElementNS("http://www.w3.org/2000/svg", "filter");
@@ -682,8 +704,8 @@ class SVGEngine {
       c.component.setScale(1.5);
     });
   }
-  addComponent(c, render=(el)=>el.createSVGElement()) {
-    this.components.push({ component: c, render: render});
+  addComponent(c, render = (el) => el.createSVGElement()) {
+    this.components.push({ component: c, render: render });
     this.element.appendChild(render(c));
   }
   createPath() {
@@ -740,15 +762,15 @@ class RoundedTriangle {
       },
       {
         x: x + width - cd / 2,
-        y: y + this.height - cd*2 - this.strokeWidth / 2
+        y: y + this.height - cd * 2 - this.strokeWidth / 2
       },
       {
         x: x + cd / 2,
-        y: y + this.height - cd*2 - this.strokeWidth / 2
+        y: y + this.height - cd * 2 - this.strokeWidth / 2
       },
       {
         x: x,
-        y: y + this.height - this.cornerHeight - cd*2
+        y: y + this.height - this.cornerHeight - cd * 2
       }
     ]); // work around for the path not filling correctly :/... idk I'm a newbie at pths
     this.container.appendChild(this.filling);
@@ -766,7 +788,7 @@ class RoundedTriangle {
     this.filling.setAttribute("points", p);
     return this.filling;
   }
-  createCorner(x, y, rot, yDir, relativeCoords=false) {
+  createCorner(x, y, rot, yDir, relativeCoords = false) {
     let cd = this.cd;
     cd = cd * rot; // rot == -1 || 1; -1 == "left"; 1 == "right"
     let cmd = (relativeCoords) ? "m" : "M";
@@ -841,8 +863,8 @@ class RoundedTriangleComponent extends RoundedTriangle {
       filling.setAttribute("stroke-width", this.strokeWidth);
     }
     if (this.rot || this.scale) {
-      path.setAttribute("transform", ((this.scale) ? "scale(" + this.scale + ") " : " ") + ((this.rot) ? "rotate(" + this.rot + "," + (this.rx + this.width/2) + "," + (this.ry + this.height/2) + ")" : ""));
-      filling.setAttribute("transform", ((this.scale) ? "scale(" + this.scale + ") " : " ") + ((this.rot) ? "rotate(" + this.rot + "," + (this.rx +this.width/2) + "," + (this.ry + this.height/2) + ")" : ""));
+      path.setAttribute("transform", ((this.scale) ? "scale(" + this.scale + ") " : " ") + ((this.rot) ? "rotate(" + this.rot + "," + (this.rx + this.width / 2) + "," + (this.ry + this.height / 2) + ")" : ""));
+      filling.setAttribute("transform", ((this.scale) ? "scale(" + this.scale + ") " : " ") + ((this.rot) ? "rotate(" + this.rot + "," + (this.rx + this.width / 2) + "," + (this.ry + this.height / 2) + ")" : ""));
     }
   }
   createSVGElement() {
