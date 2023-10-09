@@ -1,7 +1,7 @@
 // BAD; WILL BE REWRITTEN LATER
 
 const nodeMap = {
-  "OpenVS-Base-Event-Start": {
+  "OpenVS-Base-Event-Start": { // the start node has to be at the start of the node map
     script: "(function() {$further})()",
   },
   "OpenVS-Base-Basic-Condition": {
@@ -95,7 +95,9 @@ const compileSpec = (spec) => {
   var snippets = [];
   var functions = [];
   spec.flow.forEach(f => {
+    console.log(f);
     var processFlow = (flow, sns, nLevel=0) => { // nLevel == how deep is this iteration nested
+      if (flow.length == 1 && flow[0].id === nodeMap[Object.keys(nodeMap)[0]]) return [];
       flow.forEach((component, _i) => {
         if (component.id == "OVS-Branch") {
           component.branches = component.branches.map(b => {
@@ -158,7 +160,8 @@ const compileSpec = (spec) => {
       });
       return sns;
     }
-    snippets = processFlow(f,[]);
+    snippets = processFlow(f, []);
+    //snippets.push([...processFlow(f,[])]);
   });
 
   var script = "";
@@ -166,6 +169,7 @@ const compileSpec = (spec) => {
     script += f.script;
   });
   script += "\n$further";
+  snippets = snippets.filter(s => s); // remove empty elements
   var compile = (s, sns) => {
     sns.forEach((snippet, i) => {
       const last = (i == sns.length - 1);
@@ -184,6 +188,12 @@ const compileSpec = (spec) => {
     });
     return s;
   }
+  console.log(snippets, script);
+  //return;
+  /*snippets.forEach(sn => {
+    if (!script.includes("\n$further")) script += "\n$further";
+    script += compile(script, sn).replace(/\$further/g, "");
+  });*/
   script = compile(script, snippets).replace(/\$further/g, "");
   return script.trim();
 }
